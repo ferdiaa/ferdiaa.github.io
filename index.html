@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Testimonial Page</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Testimonials</h1>
+        
+        <form id="testimonialForm" method="POST">
+            <input type="hidden" id="id" name="id">
+            
+            <label for="nama">Name:</label>
+            <input type="text" id="nama" name="nama" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="asal_instansi">Organization:</label>
+            <input type="text" id="asal_instansi" name="asal_instansi" required>
+
+            <label for="testimoni">Testimonial:</label>
+            <textarea id="testimoni" name="testimoni" required></textarea>
+
+            <label for="foto">Photo URL:</label>
+            <input type="url" id="foto" name="foto" required>
+
+            <button type="submit">Submit</button>
+        </form>
+        
+        <div id="successMessage" class="success-message"></div>
+
+        <h2>Latest Testimonials</h2>
+        <div id="testimonialList"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            loadTestimonials();
+
+            // Form submission
+            $('#testimonialForm').submit(function(event) {
+                event.preventDefault();
+
+                var id = $('#id').val();
+                var nama = $('#nama').val();
+                var email = $('#email').val();
+                var asalInstansi = $('#asal_instansi').val();
+                var testimoni = $('#testimoni').val();
+                var foto = $('#foto').val();
+
+                if (id) {
+                    updateTestimonial(id, nama, email, asalInstansi, testimoni, foto);
+                } else {
+                    createTestimonial(nama, email, asalInstansi, testimoni, foto);
+                }
+            });
+
+            // Create testimonial
+            function createTestimonial(nama, email, asalInstansi, testimoni, foto) {
+                $.ajax({
+                    url: 'https://646c237a7b42c06c3b2ac0dd.mockapi.io/testimoni',
+                    type: 'POST',
+                    data: {
+                        nama: nama,
+                        email: email,
+                        asal_instansi: asalInstansi,
+                        testimoni: testimoni,
+                        foto: foto
+                    },
+                    success: function(response) {
+                        $('#successMessage').text('Testimonial submitted successfully.');
+                        $('#testimonialForm')[0].reset();
+                        loadTestimonials();
+                    },
+                    error: function() {
+                        $('#successMessage').text('Error submitting testimonial.');
+                    }
+                });
+            }
+
+            // Update testimonial
+            function updateTestimonial(id, nama, email, asalInstansi, testimoni, foto) {
+                $.ajax({
+                    url: 'https://646c237a7b42c06c3b2ac0dd.mockapi.io/testimoni/' + id,
+                    type: 'PUT',
+                    data: {
+                        nama: nama,
+                        email: email,
+                        asal_instansi: asalInstansi,
+                        testimoni: testimoni,
+                        foto: foto
+                    },
+                    success: function(response) {
+                        $('#successMessage').text('Testimonial updated successfully.');
+                        $('#testimonialForm')[0].reset();
+                        $('#id').val('');
+                        loadTestimonials();
+                    },
+                    error: function() {
+                        $('#successMessage').text('Error updating testimonial.');
+                    }
+                });
+            }
+
+            // Load testimonials
+            function loadTestimonials() {
+                $.ajax({
+                    url: 'https://646c237a7b42c06c3b2ac0dd.mockapi.io/testimoni',
+                    type: 'GET',
+                    success: function(response) {
+                        var testimonialList = $('#testimonialList');
+                        testimonialList.empty();
+
+                        $.each(response, function(index, testimonial) {
+                            var testimonialHtml = `
+                                <div class="testimonial">
+                                    <img src="${testimonial.foto}" alt="Testimonial Photo">
+                                    <h3>${testimonial.nama}</h3>
+                                    <p>${testimonial.testimoni}</p>
+                                </div>
+                            `;
+                            testimonialList.append(testimonialHtml);
+                        });
+                    },
+                    error: function() {
+                        $('#successMessage').text('Error loading testimonials.');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
